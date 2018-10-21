@@ -51,6 +51,22 @@ module Toro
       server.listen(port)
     end
 
+    def self.run(host : String, port : Int32, *args, &block)
+      server = HTTP::Server.new(*args) do |context|
+        call(context)
+      end
+
+      Signal::INT.trap do
+        server.close
+        exit
+      end
+
+      yield server
+
+      puts "#{name} - Listening on #{host}:#{port}"
+      server.listen(host, port)
+    end
+
     getter path : Seg
     getter inbox : Hash(Symbol, String)
     getter context : HTTP::Server::Context
